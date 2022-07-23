@@ -1,6 +1,6 @@
 import os
 import sys
-from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy import Column, ForeignKey, Integer, String, Enum
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy import create_engine
@@ -8,31 +8,49 @@ from eralchemy import render_er
 
 Base = declarative_base()
 
-class Person(Base):
-    __tablename__ = 'person'
-    # Here we define columns for the table person
-    # Notice that each column is also a normal Python instance attribute.
+class User(Base):
+    __tablename__ = 'user'
     id = Column(Integer, primary_key=True)
-    name = Column(String(250), nullable=False)
+    username = Column(String(20), unique=True, nullable=False)
+    password = Column(String, nullable=False)
+    email = Column(String(255), unique=True, nullable=False)
+    first_name = Column(String(255), nullable=False)
+    last_name = Column(String(255), nullable=False)
 
-class Address(Base):
-    __tablename__ = 'address'
-    # Here we define columns for the table address.
-    # Notice that each column is also a normal Python instance attribute.
+class Followers(Base):
+    __tablename__ = 'followers'
     id = Column(Integer, primary_key=True)
-    street_name = Column(String(250))
-    street_number = Column(String(250))
-    post_code = Column(String(250), nullable=False)
-    person_id = Column(Integer, ForeignKey('person.id'))
-    person = relationship(Person)
+    user_from = relationship('User')
+    user_from_id = Column(Integer, ForeignKey('user.id'), nullable=True)
+    user_to = relationship('User')
+    user_to_id = Column(Integer, ForeignKey('user.id'), nullable=True)
 
-    def to_dict(self):
-        return {}
+class Post(Base):
+    __tablename__ = 'post'
+    id = Column(Integer, primary_key=True)
+    user = relationship('User')
+    user_id = Column(Integer, ForeignKey('user.id'), nullable=True)
 
-## Draw from SQLAlchemy base
-try:
-    result = render_er(Base, 'diagram.png')
-    print("Success! Check the diagram.png file")
-except Exception as e:
-    print("There was a problem genering the diagram")
-    raise e
+class Media(Base):
+    __tablename__ = 'media'
+    id = Column(Integer, primary_key=True)
+    media_type = Column(Enum)
+    url = Column(String)
+    post = relationship(Post)
+    post_id = Column(Integer, ForeignKey('post.id'),nullable=True)
+
+class Comment(Base):
+    __tablename__ = 'comment'
+    id = Column(Integer, primary_key=True)
+    comment_text = Column(String)
+    post = relationship(Post)
+    post_id = Column(Integer, ForeignKey('post.id'),nullable=True)
+    user = relationship(User)
+    User_id = Column(Integer, ForeignKey('user.id'), nullable=True)
+
+
+
+   
+
+render_er(Base, 'diagram.png')
+   
